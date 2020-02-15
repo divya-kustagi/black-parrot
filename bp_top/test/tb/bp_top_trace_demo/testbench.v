@@ -27,6 +27,7 @@ module testbench
    , parameter npc_trace_p                 = 0
    , parameter dcache_trace_p              = 0
    , parameter vm_trace_p                  = 0
+   , parameter core_profile_p              = 0
    , parameter preload_mem_p               = 0
    , parameter load_nbf_p                  = 0
    , parameter skip_init_p                 = 0
@@ -343,6 +344,32 @@ bind bp_be_top
         ,.mem_cmd_v_i(mem_cmd_v_o)
         ,.mem_cmd_ready_i(mem_cmd_ready_i)
         );
+
+  bind bp_core
+    bp_nonsynth_core_profiler
+     #(.bp_params_p(bp_params_p))
+     core_profiler
+      (.clk_i(clk_i & (testbench.core_profile_p == 1))
+       ,.reset_i(reset_i)
+  
+       ,.icache_stall(~fe.mem.icache.vaddr_ready_o)
+
+       ,.icache_miss(fe.pc_gen.icache_miss)
+       ,.branch_override(fe.pc_gen.ovr_taken | fe.pc_gen.ovr_ntaken)
+
+       ,.cmd_fence(be.be_checker.director.suppress_iss_o)
+
+       ,.branch_mispredict(be.be_checker.scheduler.npc_mismatch)
+       ,.dependency_stall(~be.be_checker.scheduler.dispatch_v_i)
+
+       ,.exception(be.be_checker.director.trap_pkt.exception)
+       ,.interrupt(be.be_checker.director.trap_pkt._interrupt)
+       ,.dcache_miss(~be.be_mem.dcache.ready_o)
+
+       ,.reservation(be.be_calculator.reservation_n)
+       ,.commit_pkt(be.be_calculator.commit_pkt)
+       );
+
 
 wire [io_noc_cord_width_p-1:0] dst_cord_lo = 1;
 
