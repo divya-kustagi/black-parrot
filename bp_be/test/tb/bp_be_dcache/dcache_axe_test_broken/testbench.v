@@ -14,7 +14,7 @@ module testbench
     // parameters
     //
     //, localparam num_lce_p = `NUM_LCE_P
-    , localparam mem_els_p = 2*num_lce_p*lce_sets_p*lce_assoc_p
+    , localparam mem_els_p = 2*num_lce_p*d_lce_sets_p*d_lce_assoc_p
     , localparam instr_count = `NUM_INSTR_P
 
     , localparam ptag_width_lp=(paddr_width_p-bp_page_offset_width_gp)

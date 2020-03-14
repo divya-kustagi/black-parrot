@@ -76,11 +76,11 @@ module bp_rolly_lce_me_manycore
 
   // dcache
   //
-  `declare_bp_lce_cce_req_s(num_cce_p, num_lce_p, paddr_width_p, lce_assoc_p, dword_width_p);
+  `declare_bp_lce_cce_req_s(num_cce_p, num_lce_p, paddr_width_p, d_lce_assoc_p, dword_width_p);
   `declare_bp_lce_cce_resp_s(num_cce_p, num_lce_p, paddr_width_p);
   `declare_bp_lce_cce_data_resp_s(num_cce_p, num_lce_p, paddr_width_p, cce_block_width_p);
-  `declare_bp_cce_lce_cmd_s(num_cce_p, num_lce_p, paddr_width_p, lce_assoc_p);
-  `declare_bp_lce_data_cmd_s(num_lce_p, cce_block_width_p, lce_assoc_p);
+  `declare_bp_cce_lce_cmd_s(num_cce_p, num_lce_p, paddr_width_p, d_lce_assoc_p);
+  `declare_bp_lce_data_cmd_s(num_lce_p, cce_block_width_p, d_lce_assoc_p);
 
   bp_lce_cce_req_s lce_req;
   logic lce_req_v;
@@ -114,8 +114,8 @@ module bp_rolly_lce_me_manycore
   bp_be_dcache #(
     .data_width_p(dword_width_p)
     ,.paddr_width_p(paddr_width_p)
-    ,.sets_p(lce_sets_p)
-    ,.ways_p(lce_assoc_p)
+    ,.sets_p(d_lce_sets_p)
+    ,.ways_p(d_lce_assoc_p)
     ,.num_cce_p(num_cce_p)
     ,.num_lce_p(num_lce_p)
     ,.debug_p(1)
@@ -182,7 +182,7 @@ module bp_rolly_lce_me_manycore
 
   // memory end
   //
-  `declare_bp_me_if(paddr_width_p, cce_block_width_p, lce_id_width_p, lce_assoc_p);
+  `declare_bp_me_if(paddr_width_p, cce_block_width_p, lce_id_width_p, d_lce_assoc_p);
 
   logic [inst_ram_addr_width_lp-1:0] cce_inst_boot_rom_addr;
   logic [`bp_cce_inst_width-1:0] cce_inst_boot_rom_data;
@@ -416,7 +416,7 @@ module bp_rolly_lce_me_manycore
 
     ,.paddr_width_p(paddr_width_p)
     ,.num_lce_p(num_lce_p)
-    ,.lce_assoc_p(lce_assoc_p)
+    ,.lce_assoc_p(d_lce_assoc_p)
     ,.block_size_in_bits_p(cce_block_width_p)
 
     ,.freeze_init_p(0)

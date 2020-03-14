@@ -11,7 +11,7 @@ module testbench
   #(parameter bp_params_e bp_params_p = BP_CFG_FLOWVAR
     `declare_bp_proc_params(bp_params_p)
 
-    , localparam mem_els_p = 2*lce_sets_p*lce_assoc_p
+    , localparam mem_els_p = 2*d_lce_sets_p*d_lce_assoc_p
 
     , localparam dcache_opcode_width_lp=$bits(bp_be_dcache_opcode_e)
     , localparam tr_ring_width_lp=(dcache_opcode_width_lp+paddr_width_p+dword_width_p)

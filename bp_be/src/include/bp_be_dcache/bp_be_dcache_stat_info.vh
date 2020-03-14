@@ -15,6 +15,12 @@
     logic [ways_mp-1:0] dirty;            \
   } bp_be_dcache_stat_info_s
 
+`define declare_bp_be_icache_stat_info_s(ways_mp)  \
+  typedef struct packed {                 \
+    logic [ways_mp-2:0] lru;              \
+    logic [ways_mp-1:0] dirty;            \
+  } bp_be_icache_stat_info_s
+
 `define bp_be_dcache_stat_info_width(ways_mp) \
   (2*ways_mp-1)
 
