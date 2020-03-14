@@ -112,5 +112,31 @@ typedef enum bit [2:0]
 `define declare_bp_me_if_widths(paddr_width_mp, data_width_mp, lce_id_width_mp, lce_assoc_mp) \
   , localparam cce_mem_msg_width_lp=`bp_cce_mem_msg_width(paddr_width_mp, data_width_mp, lce_id_width_mp, lce_assoc_mp)
 
+// d$ business
+`define declare_bp_d_cce_mem_msg_payload_s(lce_id_width_mp, lce_assoc_mp) \
+  typedef struct packed                                       \
+  {                                                           \
+    logic [lce_id_width_mp-1:0]                  lce_id;      \
+    logic [`BSG_SAFE_CLOG2(lce_assoc_mp)-1:0]    way_id;      \
+    bp_coh_states_e                              state;       \
+    logic                                        speculative; \
+  }  bp_d_cce_mem_msg_payload_s
+
+`define declare_bp_d_cce_mem_msg_s(addr_width_mp, data_width_mp)  \
+  typedef struct packed                                         \
+  {                                                             \
+    logic [data_width_mp-1:0]                    data;          \
+    bp_d_cce_mem_msg_payload_s                     payload;       \
+    bp_cce_mem_req_size_e                        size;          \
+    logic [addr_width_mp-1:0]                    addr;          \
+    bp_cce_mem_cmd_type_e                        msg_type;      \
+  }  bp_d_cce_mem_msg_s
+
+`define declare_bp_d_me_if(paddr_width_mp, data_width_mp, lce_id_width_mp, lce_assoc_mp) \
+  `declare_bp_d_cce_mem_msg_payload_s(lce_id_width_mp, lce_assoc_mp);                    \
+  `declare_bp_d_cce_mem_msg_s(paddr_width_mp, data_width_mp);                            \
+
+`define declare_bp_d_me_if_widths(paddr_width_mp, data_width_mp, lce_id_width_mp, lce_assoc_mp) \
+  , localparam d_cce_mem_msg_width_lp=`bp_cce_mem_msg_width(paddr_width_mp, data_width_mp, lce_id_width_mp, lce_assoc_mp)
 
 `endif

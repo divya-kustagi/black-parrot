@@ -11,6 +11,7 @@ module bp_softcore
  #(parameter bp_params_e bp_params_p = e_bp_inv_cfg
    `declare_bp_proc_params(bp_params_p)
    `declare_bp_me_if_widths(paddr_width_p, cce_block_width_p, lce_id_width_p, lce_assoc_p)
+   `declare_bp_d_me_if_widths(paddr_width_p, cce_block_width_p, lce_id_width_p, d_lce_assoc_p)
    )
   (input                                               clk_i
    , input                                             reset_i
@@ -37,8 +38,13 @@ module bp_softcore
   `declare_bp_cfg_bus_s(vaddr_width_p, core_id_width_p, cce_id_width_p, lce_id_width_p, cce_pc_width_p, cce_instr_width_p);
   `declare_bp_cache_service_if(paddr_width_p, ptag_width_p, lce_sets_p, lce_assoc_p, dword_width_p, cce_block_width_p);
   `declare_bp_me_if(paddr_width_p, cce_block_width_p, lce_id_width_p, lce_assoc_p)
-  `declare_bp_be_dcache_stat_info_s(lce_assoc_p);
+  `declare_bp_be_icache_stat_info_s(lce_assoc_p);
   bp_cfg_bus_s cfg_bus_li;
+
+  //D-cache stuff
+  `declare_bp_d_cache_service_if(paddr_width_p, ptag_width_p, d_lce_sets_p, d_lce_assoc_p, dword_width_p, cce_block_width_p);
+  `declare_bp_be_dcache_stat_info_s(d_lce_assoc_p);
+  `declare_bp_d_me_if(paddr_width_p, cce_block_width_p, lce_id_width_p, d_lce_assoc_p)
 
   `bp_cast_o(bp_cce_mem_msg_s, mem_cmd);
   `bp_cast_o(bp_cce_mem_msg_s, io_cmd);
@@ -47,26 +53,33 @@ module bp_softcore
 
   bp_cache_req_s [1:0] cache_req_lo;
   logic [1:0] cache_req_v_lo, cache_req_ready_li;
-  bp_cache_req_metadata_s [1:0] cache_req_metadata_lo;
+  bp_cache_req_metadata_s cache_req_metadata_lo;
+  bp_d_cache_req_metadata_s d_cache_req_metadata_lo;
   logic [1:0] cache_req_metadata_v_lo;
 
-  bp_cache_tag_mem_pkt_s [1:0] tag_mem_pkt_li;
+  bp_cache_tag_mem_pkt_s tag_mem_pkt_li;
+  bp_d_cache_tag_mem_pkt_s d_tag_mem_pkt_li;
   logic [1:0] tag_mem_pkt_v_li, tag_mem_pkt_ready_lo;
   logic [1:0][ptag_width_p-1:0] tag_mem_lo;
-  bp_cache_data_mem_pkt_s [1:0] data_mem_pkt_li;
+  bp_cache_data_mem_pkt_s data_mem_pkt_li;
+  bp_d_cache_data_mem_pkt_s d_data_mem_pkt_li;
   logic [1:0] data_mem_pkt_v_li, data_mem_pkt_ready_lo;
   logic [1:0][cce_block_width_p-1:0] data_mem_lo;
-  bp_cache_stat_mem_pkt_s [1:0] stat_mem_pkt_li;
+  bp_cache_stat_mem_pkt_s stat_mem_pkt_li;
+  bp_d_cache_stat_mem_pkt_s d_stat_mem_pkt_li;
   logic [1:0] stat_mem_pkt_v_li, stat_mem_pkt_ready_lo;
-  bp_be_dcache_stat_info_s [1:0] stat_mem_lo;
+  bp_be_icache_stat_info_s stat_mem_lo;
+  bp_be_dcache_stat_info_s d_stat_mem_lo;
 
   logic [1:0] cache_req_complete_li;
   logic [1:0] credits_full_li, credits_empty_li;
   logic timer_irq_li, software_irq_li, external_irq_li;
 
-  bp_cce_mem_msg_s [1:0] mem_cmd_lo;
+  bp_cce_mem_msg_s   mem_cmd_lo;
+  bp_d_cce_mem_msg_s d_mem_cmd_lo;
   logic [1:0] mem_cmd_v_lo, mem_cmd_ready_li;
-  bp_cce_mem_msg_s [1:0] mem_resp_li;
+  bp_cce_mem_msg_s   mem_resp_li;
+  bp_d_cce_mem_msg_s d_mem_resp_li;
   logic [1:0] mem_resp_v_li, mem_resp_yumi_lo;
 
   bp_cce_mem_msg_s clint_cmd_li;
@@ -99,23 +112,28 @@ module bp_softcore
      ,.cache_req_v_o(cache_req_v_lo)
      ,.cache_req_ready_i(cache_req_ready_li)
      ,.cache_req_metadata_o(cache_req_metadata_lo)
+     ,.d_cache_req_metadata_o(d_cache_req_metadata_lo)
      ,.cache_req_metadata_v_o(cache_req_metadata_v_lo)
      ,.cache_req_complete_i(cache_req_complete_li)
 
      ,.tag_mem_pkt_i(tag_mem_pkt_li)
+     ,.d_tag_mem_pkt_i(d_tag_mem_pkt_li)
      ,.tag_mem_pkt_v_i(tag_mem_pkt_v_li)
      ,.tag_mem_pkt_ready_o(tag_mem_pkt_ready_lo)
      ,.tag_mem_o(tag_mem_lo)
 
      ,.data_mem_pkt_i(data_mem_pkt_li)
+     ,.d_data_mem_pkt_i(d_data_mem_pkt_li)
      ,.data_mem_pkt_v_i(data_mem_pkt_v_li)
      ,.data_mem_pkt_ready_o(data_mem_pkt_ready_lo)
      ,.data_mem_o(data_mem_lo)
 
      ,.stat_mem_pkt_i(stat_mem_pkt_li)
+     ,.d_stat_mem_pkt_i(d_stat_mem_pkt_li)
      ,.stat_mem_pkt_v_i(stat_mem_pkt_v_li)
      ,.stat_mem_pkt_ready_o(stat_mem_pkt_ready_lo)
      ,.stat_mem_o(stat_mem_lo)
+     ,.d_stat_mem_o(d_stat_mem_lo)
 
      ,.credits_full_i(|credits_full_li)
      ,.credits_empty_i(&credits_empty_li)
@@ -126,51 +144,92 @@ module bp_softcore
      );
 
   wire [1:0][lce_id_width_p-1:0] lce_id_li = {cfg_bus_li.dcache_id, cfg_bus_li.icache_id};
-  for (genvar i = 0; i < 2; i++)
-    begin : uce
-      bp_uce
-       #(.bp_params_p(bp_params_p))
-       uce
-        (.clk_i(clk_i)
-         ,.reset_i(reset_i)
 
-         ,.lce_id_i(lce_id_li[i])
+  bp_uce
+    #(.bp_params_p(bp_params_p), .uce_assoc_p(lce_assoc_p), .uce_sets_p(lce_sets_p))
+    i_uce
+    (.clk_i(clk_i)
+      ,.reset_i(reset_i)
 
-         ,.cache_req_i(cache_req_lo[i])
-         ,.cache_req_v_i(cache_req_v_lo[i])
-         ,.cache_req_ready_o(cache_req_ready_li[i])
-         ,.cache_req_metadata_i(cache_req_metadata_lo[i])
-         ,.cache_req_metadata_v_i(cache_req_metadata_v_lo[i])
+      ,.lce_id_i(lce_id_li[0])
 
-         ,.tag_mem_pkt_o(tag_mem_pkt_li[i])
-         ,.tag_mem_pkt_v_o(tag_mem_pkt_v_li[i])
-         ,.tag_mem_pkt_ready_i(tag_mem_pkt_ready_lo[i])
-         ,.tag_mem_i(tag_mem_lo[i])
+      ,.cache_req_i(cache_req_lo[0])
+      ,.cache_req_v_i(cache_req_v_lo[0])
+      ,.cache_req_ready_o(cache_req_ready_li[0])
+      ,.cache_req_metadata_i(cache_req_metadata_lo)
+      ,.cache_req_metadata_v_i(cache_req_metadata_v_lo[0])
 
-         ,.data_mem_pkt_o(data_mem_pkt_li[i])
-         ,.data_mem_pkt_v_o(data_mem_pkt_v_li[i])
-         ,.data_mem_pkt_ready_i(data_mem_pkt_ready_lo[i])
-         ,.data_mem_i(data_mem_lo[i])
+      ,.tag_mem_pkt_o(tag_mem_pkt_li)
+      ,.tag_mem_pkt_v_o(tag_mem_pkt_v_li[0])
+      ,.tag_mem_pkt_ready_i(tag_mem_pkt_ready_lo[0])
+      ,.tag_mem_i(tag_mem_lo[0])
 
-         ,.stat_mem_pkt_o(stat_mem_pkt_li[i])
-         ,.stat_mem_pkt_v_o(stat_mem_pkt_v_li[i])
-         ,.stat_mem_pkt_ready_i(stat_mem_pkt_ready_lo[i])
-         ,.stat_mem_i(stat_mem_lo[i])
+      ,.data_mem_pkt_o(data_mem_pkt_li)
+      ,.data_mem_pkt_v_o(data_mem_pkt_v_li[0])
+      ,.data_mem_pkt_ready_i(data_mem_pkt_ready_lo[0])
+      ,.data_mem_i(data_mem_lo[0])
 
-         ,.cache_req_complete_o(cache_req_complete_li[i])
+      ,.stat_mem_pkt_o(stat_mem_pkt_li)
+      ,.stat_mem_pkt_v_o(stat_mem_pkt_v_li[0])
+      ,.stat_mem_pkt_ready_i(stat_mem_pkt_ready_lo[0])
+      ,.stat_mem_i(stat_mem_lo)
 
-         ,.credits_full_o(credits_full_li[i])
-         ,.credits_empty_o(credits_empty_li[i])
+      ,.cache_req_complete_o(cache_req_complete_li[0])
 
-         ,.mem_cmd_o(mem_cmd_lo[i])
-         ,.mem_cmd_v_o(mem_cmd_v_lo[i])
-         ,.mem_cmd_ready_i(mem_cmd_ready_li[i])
+      ,.credits_full_o(credits_full_li[0])
+      ,.credits_empty_o(credits_empty_li[0])
 
-         ,.mem_resp_i(mem_resp_li[i])
-         ,.mem_resp_v_i(mem_resp_v_li[i])
-         ,.mem_resp_yumi_o(mem_resp_yumi_lo[i])
-         );
-    end
+      ,.mem_cmd_o(mem_cmd_lo)
+      ,.mem_cmd_v_o(mem_cmd_v_lo[0])
+      ,.mem_cmd_ready_i(mem_cmd_ready_li[0])
+
+      ,.mem_resp_i(mem_resp_li)
+      ,.mem_resp_v_i(mem_resp_v_li[0])
+      ,.mem_resp_yumi_o(mem_resp_yumi_lo[0])
+      );
+
+  bp_uce
+    #(.bp_params_p(bp_params_p), .uce_assoc_p(d_lce_assoc_p), .uce_sets_p(d_lce_sets_p))
+    d_uce
+    (.clk_i(clk_i)
+      ,.reset_i(reset_i)
+
+      ,.lce_id_i(lce_id_li[1])
+
+      ,.cache_req_i(cache_req_lo[1])
+      ,.cache_req_v_i(cache_req_v_lo[1])
+      ,.cache_req_ready_o(cache_req_ready_li[1])
+      ,.cache_req_metadata_i(d_cache_req_metadata_lo) //fix me
+      ,.cache_req_metadata_v_i(cache_req_metadata_v_lo[1])
+
+      ,.tag_mem_pkt_o(d_tag_mem_pkt_li)
+      ,.tag_mem_pkt_v_o(tag_mem_pkt_v_li[1])
+      ,.tag_mem_pkt_ready_i(tag_mem_pkt_ready_lo[1])
+      ,.tag_mem_i(tag_mem_lo[1])
+
+      ,.data_mem_pkt_o(d_data_mem_pkt_li)
+      ,.data_mem_pkt_v_o(data_mem_pkt_v_li[1])
+      ,.data_mem_pkt_ready_i(data_mem_pkt_ready_lo[1])
+      ,.data_mem_i(data_mem_lo[1])
+
+      ,.stat_mem_pkt_o(d_stat_mem_pkt_li)
+      ,.stat_mem_pkt_v_o(stat_mem_pkt_v_li[1])
+      ,.stat_mem_pkt_ready_i(stat_mem_pkt_ready_lo[1])
+      ,.stat_mem_i(d_stat_mem_lo)
+
+      ,.cache_req_complete_o(cache_req_complete_li[1])
+
+      ,.credits_full_o(credits_full_li[1])
+      ,.credits_empty_o(credits_empty_li[1])
+
+      ,.mem_cmd_o(d_mem_cmd_lo)
+      ,.mem_cmd_v_o(mem_cmd_v_lo[1])
+      ,.mem_cmd_ready_i(mem_cmd_ready_li[1])
+
+      ,.mem_resp_i(d_mem_resp_li)
+      ,.mem_resp_v_i(mem_resp_v_li[1])
+      ,.mem_resp_yumi_o(mem_resp_yumi_lo[1])
+      );
 
   bp_clint_slice_buffered
    #(.bp_params_p(bp_params_p))
@@ -194,25 +253,40 @@ module bp_softcore
   // Arbitration logic
   //   Don't necessarily need to arbitrate. On an FPGA, can use a 2r1w RAM. But, we might also be on
   //   a bus
-  bp_cce_mem_msg_s [1:0] fifo_lo;
+  bp_cce_mem_msg_s   i_fifo_lo;
+  bp_d_cce_mem_msg_s d_fifo_lo;
   logic [1:0] fifo_v_lo, fifo_yumi_li;
-  for (genvar i = 0; i < 2; i++)
-    begin : fifo
-      bsg_one_fifo
-       #(.width_p($bits(bp_cce_mem_msg_s)))
-       mem_fifo
-        (.clk_i(clk_i)
-         ,.reset_i(reset_i)
 
-         ,.data_i(mem_cmd_lo[i])
-         ,.v_i(mem_cmd_v_lo[i])
-         ,.ready_o(mem_cmd_ready_li[i])
+  bsg_one_fifo
+    #(.width_p($bits(bp_cce_mem_msg_s)))
+    i_mem_fifo
+    (.clk_i(clk_i)
+      ,.reset_i(reset_i)
 
-         ,.data_o(fifo_lo[i])
-         ,.v_o(fifo_v_lo[i])
-         ,.yumi_i(fifo_yumi_li[i])
-         );
-    end
+      ,.data_i(mem_cmd_lo)
+      ,.v_i(mem_cmd_v_lo[0])
+      ,.ready_o(mem_cmd_ready_li[0])
+
+      ,.data_o(i_fifo_lo)
+      ,.v_o(fifo_v_lo[0])
+      ,.yumi_i(fifo_yumi_li[0])
+      );
+
+  bsg_one_fifo
+    #(.width_p($bits(bp_d_cce_mem_msg_s)))
+    d_mem_fifo
+    (.clk_i(clk_i)
+      ,.reset_i(reset_i)
+
+      ,.data_i(d_mem_cmd_lo)
+      ,.v_i(mem_cmd_v_lo[1])
+      ,.ready_o(mem_cmd_ready_li[1])
+
+      ,.data_o(d_fifo_lo)
+      ,.v_o(fifo_v_lo[1])
+      ,.yumi_i(fifo_yumi_li[1])
+      );
+
 
   wire arb_ready_li = clint_cmd_ready_lo & mem_cmd_ready_i & io_cmd_ready_i;
   bsg_arb_fixed
@@ -231,21 +305,21 @@ module bp_softcore
   wire is_io_cmd = local_cmd_li & (device_cmd_li == host_dev_gp);
   wire is_clint_cmd = local_cmd_li & (device_cmd_li == clint_dev_gp);
 
-  assign clint_cmd_li   = fifo_v_lo[1] ? fifo_lo[1] : fifo_lo[0];
+  assign clint_cmd_li   = fifo_v_lo[1] ? d_fifo_lo : i_fifo_lo;
   assign clint_cmd_v_li = is_clint_cmd & |fifo_yumi_li;
 
-  assign io_cmd_cast_o  = fifo_v_lo[1] ? fifo_lo[1] : fifo_lo[0];
+  assign io_cmd_cast_o  = fifo_v_lo[1] ? d_fifo_lo : i_fifo_lo;
   assign io_cmd_v_o     = is_io_cmd & |fifo_yumi_li;
 
-  assign mem_cmd_cast_o = fifo_v_lo[1] ? fifo_lo[1] : fifo_lo[0];
+  assign mem_cmd_cast_o = fifo_v_lo[1] ? d_fifo_lo : i_fifo_lo;
   assign mem_cmd_v_o    = ~is_clint_cmd & ~is_io_cmd & |fifo_yumi_li;
 
-  assign mem_resp_li[0]   = clint_resp_v_lo & (clint_resp_lo.payload.lce_id == 1'b0)
+  assign mem_resp_li      = clint_resp_v_lo & (clint_resp_lo.payload.lce_id == 1'b0)
                             ? clint_resp_lo
                             : io_resp_v_i & (io_resp_cast_i.payload.lce_id == 1'b0)
                               ? io_resp_i 
                               : mem_resp_i;
-  assign mem_resp_li[1]   = clint_resp_v_lo & (clint_resp_lo.payload.lce_id == 1'b1)
+  assign d_mem_resp_li    = clint_resp_v_lo & (clint_resp_lo.payload.lce_id == 1'b1)
                             ? clint_resp_lo
                             : io_resp_v_i & (io_resp_cast_i.payload.lce_id == 1'b1)
                               ? io_resp_i

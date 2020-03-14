@@ -70,11 +70,11 @@ module bp_me_mock_lce_me
 
   // LCE
   //
-  `declare_bp_lce_cce_req_s(num_cce_p, num_lce_p, paddr_width_p, lce_assoc_p, dword_width_p);
+  `declare_bp_lce_cce_req_s(num_cce_p, num_lce_p, paddr_width_p, d_lce_assoc_p, dword_width_p);
   `declare_bp_lce_cce_resp_s(num_cce_p, num_lce_p, paddr_width_p);
   `declare_bp_lce_cce_data_resp_s(num_cce_p, num_lce_p, paddr_width_p, cce_block_width_p);
-  `declare_bp_cce_lce_cmd_s(num_cce_p, num_lce_p, paddr_width_p, lce_assoc_p);
-  `declare_bp_lce_data_cmd_s(num_lce_p, cce_block_width_p, lce_assoc_p);
+  `declare_bp_cce_lce_cmd_s(num_cce_p, num_lce_p, paddr_width_p, d_lce_assoc_p);
+  `declare_bp_lce_data_cmd_s(num_lce_p, cce_block_width_p, d_lce_assoc_p);
 
   bp_lce_cce_req_s lce_req_lo;
   logic lce_req_v_lo;
@@ -162,8 +162,8 @@ module bp_me_mock_lce_me
   bp_be_dcache #(
     .data_width_p(dword_width_p)
     ,.paddr_width_p(paddr_width_p)
-    ,.sets_p(lce_sets_p)
-    ,.ways_p(lce_assoc_p)
+    ,.sets_p(d_lce_sets_p)
+    ,.ways_p(d_lce_assoc_p)
     ,.num_cce_p(num_cce_p)
     ,.num_lce_p(num_lce_p)
     ,.max_credits_p(max_credits_p)
@@ -269,7 +269,7 @@ module bp_me_mock_lce_me
 
   // Memory End
   //
-  `declare_bp_me_if(paddr_width_p,cce_block_width_p,num_lce_p,lce_assoc_p);
+  `declare_bp_me_if(paddr_width_p,cce_block_width_p,num_lce_p,d_lce_assoc_p);
 
   logic [num_cce_p-1:0][inst_ram_addr_width_lp-1:0] cce_inst_boot_rom_addr;
   logic [num_cce_p-1:0][`bp_cce_inst_width-1:0] cce_inst_boot_rom_data;
@@ -379,9 +379,9 @@ always_ff @(posedge clk_i)
      ,.num_lce_p(num_lce_p)
      ,.num_cce_p(num_cce_p)
      ,.paddr_width_p(paddr_width_p)
-     ,.lce_assoc_p(lce_assoc_p)
+     ,.lce_assoc_p(d_lce_assoc_p)
      ,.block_size_in_bytes_p(block_size_in_bytes_lp)
-     ,.lce_sets_p(lce_sets_p)
+     ,.lce_sets_p(d_lce_sets_p)
      ,.lce_req_data_width_p(dword_width_p)
      )
    mem

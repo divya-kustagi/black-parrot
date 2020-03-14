@@ -48,21 +48,21 @@ module bp_be_dcache_lce
   import bp_be_dcache_pkg::*;
  #(parameter bp_params_e bp_params_p = e_bp_inv_cfg
    `declare_bp_proc_params(bp_params_p)
-   `declare_bp_lce_cce_if_widths(cce_id_width_p, lce_id_width_p, paddr_width_p, lce_assoc_p, dword_width_p, cce_block_width_p) 
-   `declare_bp_cache_service_if_widths(paddr_width_p, ptag_width_p, lce_sets_p, lce_assoc_p, dword_width_p, cce_block_width_p)
+   `declare_bp_lce_cce_if_widths(cce_id_width_p, lce_id_width_p, paddr_width_p, d_lce_assoc_p, dword_width_p, cce_block_width_p) 
+   `declare_bp_cache_service_if_widths(paddr_width_p, ptag_width_p, d_lce_sets_p, d_lce_assoc_p, dword_width_p, cce_block_width_p)
     
-    , localparam block_size_in_words_lp=lce_assoc_p
+    , localparam block_size_in_words_lp=dword_width_p / d_lce_assoc_p
     , localparam data_mask_width_lp=(dword_width_p>>3)
     , localparam byte_offset_width_lp=`BSG_SAFE_CLOG2(dword_width_p>>3)
     , localparam word_offset_width_lp=`BSG_SAFE_CLOG2(block_size_in_words_lp)
     , localparam block_offset_width_lp=(word_offset_width_lp+byte_offset_width_lp)
-    , localparam index_width_lp=`BSG_SAFE_CLOG2(lce_sets_p)
+    , localparam index_width_lp=`BSG_SAFE_CLOG2(d_lce_sets_p)
     , localparam ptag_width_lp=(paddr_width_p-bp_page_offset_width_gp)
-    , localparam way_id_width_lp=`BSG_SAFE_CLOG2(lce_assoc_p)
+    , localparam way_id_width_lp=`BSG_SAFE_CLOG2(d_lce_assoc_p)
   
 
     , localparam stat_info_width_lp=
-      `bp_be_dcache_stat_info_width(lce_assoc_p)
+      `bp_be_dcache_stat_info_width(d_lce_assoc_p)
   )
   (
     input clk_i
@@ -122,8 +122,8 @@ module bp_be_dcache_lce
 
   // casting structs
   //
-  `declare_bp_lce_cce_if(cce_id_width_p, lce_id_width_p, paddr_width_p, lce_assoc_p, dword_width_p, cce_block_width_p)
-  `declare_bp_cache_service_if(paddr_width_p, ptag_width_p, lce_sets_p, lce_assoc_p, dword_width_p, cce_block_width_p);
+  `declare_bp_lce_cce_if(cce_id_width_p, lce_id_width_p, paddr_width_p, d_lce_assoc_p, dword_width_p, cce_block_width_p)
+  `declare_bp_cache_service_if(paddr_width_p, ptag_width_p, d_lce_sets_p, d_lce_assoc_p, dword_width_p, cce_block_width_p);
  
   bp_lce_cce_req_s lce_req;
   bp_lce_cce_resp_s lce_resp;
