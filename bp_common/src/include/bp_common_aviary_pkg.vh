@@ -35,6 +35,9 @@ package bp_common_aviary_pkg;
       ,cce_block_width      : 512
       ,cce_pc_width         : 8
 
+      ,d_lce_sets           : 64
+      ,d_lce_assoc          : 8
+
       ,l2_sets : 256
       ,l2_assoc: 4
 
@@ -77,14 +80,17 @@ package bp_common_aviary_pkg;
       ,btb_idx_width            : 6
       ,bht_idx_width            : 9
       ,ras_idx_width            : 2
-      
+
       ,itlb_els             : 8
       ,dtlb_els             : 8
-      
+
       ,lce_sets             : 64
       ,lce_assoc            : 8
       ,cce_block_width      : 512
       ,cce_pc_width         : 8
+
+      ,d_lce_sets           : 64
+      ,d_lce_assoc          : 4
 
       ,l2_sets : 256
       ,l2_assoc: 4
@@ -138,6 +144,9 @@ package bp_common_aviary_pkg;
       ,cce_block_width      : 512
       ,cce_pc_width         : 8
 
+      ,d_lce_sets           : 64
+      ,d_lce_assoc          : 8
+
       ,l2_sets : 256
       ,l2_assoc: 4
 
@@ -188,6 +197,9 @@ package bp_common_aviary_pkg;
       ,lce_assoc            : 8
       ,cce_block_width      : 512
       ,cce_pc_width         : 8
+
+      ,d_lce_sets           : 64
+      ,d_lce_assoc          : 8
 
       ,l2_sets : 256
       ,l2_assoc: 4
@@ -240,6 +252,9 @@ package bp_common_aviary_pkg;
       ,cce_block_width      : 512
       ,cce_pc_width         : 8
 
+      ,d_lce_sets           : 64
+      ,d_lce_assoc          : 8
+
       ,l2_sets : 256
       ,l2_assoc: 4
 
@@ -290,6 +305,9 @@ package bp_common_aviary_pkg;
       ,lce_assoc            : 8
       ,cce_block_width      : 512
       ,cce_pc_width         : 8
+
+      ,d_lce_sets           : 64
+      ,d_lce_assoc          : 8
 
       ,l2_sets : 256
       ,l2_assoc: 4
@@ -342,6 +360,9 @@ package bp_common_aviary_pkg;
       ,cce_block_width      : 512
       ,cce_pc_width         : 8
 
+      ,d_lce_sets           : 64
+      ,d_lce_assoc          : 8
+
       ,l2_sets : 256
       ,l2_assoc: 4
 
@@ -393,6 +414,9 @@ package bp_common_aviary_pkg;
       ,cce_block_width      : 512
       ,cce_pc_width         : 8
 
+      ,d_lce_sets           : 64
+      ,d_lce_assoc          : 8
+
       ,l2_sets : 256
       ,l2_assoc: 4
 
@@ -443,6 +467,9 @@ package bp_common_aviary_pkg;
       ,lce_assoc            : 8
       ,cce_block_width      : 512
       ,cce_pc_width         : 8
+
+      ,d_lce_sets           : 64
+      ,d_lce_assoc          : 8
 
       ,l2_sets : 256
       ,l2_assoc: 4
