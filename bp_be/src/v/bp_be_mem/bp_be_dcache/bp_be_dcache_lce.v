@@ -51,9 +51,9 @@ module bp_be_dcache_lce
    `declare_bp_lce_cce_if_widths(cce_id_width_p, lce_id_width_p, paddr_width_p, d_lce_assoc_p, dword_width_p, cce_block_width_p) 
    `declare_bp_cache_service_if_widths(paddr_width_p, ptag_width_p, d_lce_sets_p, d_lce_assoc_p, dword_width_p, cce_block_width_p)
     
-    , localparam block_size_in_words_lp=dword_width_p / d_lce_assoc_p
-    , localparam data_mask_width_lp=(dword_width_p>>3)
-    , localparam byte_offset_width_lp=`BSG_SAFE_CLOG2(dword_width_p>>3)
+    , localparam block_size_in_words_lp=d_lce_assoc_p
+    , localparam data_mask_width_lp=((cce_block_width_p/d_lce_assoc_p)>>3)
+    , localparam byte_offset_width_lp=`BSG_SAFE_CLOG2((cce_block_width_p/d_lce_assoc_p)>>3)
     , localparam word_offset_width_lp=`BSG_SAFE_CLOG2(block_size_in_words_lp)
     , localparam block_offset_width_lp=(word_offset_width_lp+byte_offset_width_lp)
     , localparam index_width_lp=`BSG_SAFE_CLOG2(d_lce_sets_p)

@@ -20,8 +20,8 @@ module bp_be_dcache_lce_cmd
    `declare_bp_proc_params(bp_params_p)
 
     , localparam block_size_in_words_lp=d_lce_assoc_p
-    , localparam data_mask_width_lp=(dword_width_p>>3)
-    , localparam byte_offset_width_lp=`BSG_SAFE_CLOG2(dword_width_p>>3)
+    , localparam data_mask_width_lp=((cce_block_width_p/d_lce_assoc_p)>>3)
+    , localparam byte_offset_width_lp=`BSG_SAFE_CLOG2((cce_block_width_p/d_lce_assoc_p)>>3)
     , localparam word_offset_width_lp=`BSG_SAFE_CLOG2(block_size_in_words_lp)
     , localparam block_offset_width_lp=(word_offset_width_lp+byte_offset_width_lp)
     , localparam index_width_lp=`BSG_SAFE_CLOG2(d_lce_sets_p)

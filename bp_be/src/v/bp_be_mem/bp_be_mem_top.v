@@ -21,9 +21,9 @@ module bp_be_mem_top
    
    // Generated parameters
    // D$
-   , localparam block_size_in_words_lp = dword_width_p / d_lce_assoc_p // 512bit(64-byte)/assoc // Due to cache interleaving scheme
-   , localparam data_mask_width_lp     = (dword_width_p >> 3) // Byte mask
-   , localparam byte_offset_width_lp   = `BSG_SAFE_CLOG2(dword_width_p >> 3)
+   , localparam block_size_in_words_lp = d_lce_assoc_p // Due to cache interleaving scheme
+   , localparam data_mask_width_lp     = ((cce_block_width_p/d_lce_assoc_p)>>3) // Byte mask
+   , localparam byte_offset_width_lp   = `BSG_SAFE_CLOG2((cce_block_width_p/d_lce_assoc_p)>>3)
    , localparam word_offset_width_lp   = `BSG_SAFE_CLOG2(block_size_in_words_lp)
    , localparam block_offset_width_lp  = (word_offset_width_lp + byte_offset_width_lp)
    , localparam index_width_lp         = `BSG_SAFE_CLOG2(d_lce_sets_p)
