@@ -24,7 +24,7 @@ module bp_be_dcache_lce_cmd
     , localparam byte_offset_width_lp=`BSG_SAFE_CLOG2((cce_block_width_p/d_lce_assoc_p)>>3)
     , localparam word_offset_width_lp=`BSG_SAFE_CLOG2(block_size_in_words_lp)
     , localparam block_offset_width_lp=(word_offset_width_lp+byte_offset_width_lp)
-    , localparam index_width_lp=`BSG_SAFE_CLOG2(d_lce_sets_p)
+    , localparam index_width_lp=`BSG_SAFE_CLOG2(lce_sets_p)
     , localparam tag_width_lp=(paddr_width_p-index_width_lp-block_offset_width_lp)
     , localparam way_id_width_lp=`BSG_SAFE_CLOG2(d_lce_assoc_p)
     
@@ -34,14 +34,14 @@ module bp_be_dcache_lce_cmd
       `bp_be_dcache_stat_info_width(d_lce_assoc_p)
 
     , localparam dcache_lce_data_mem_pkt_width_lp=
-      `bp_cache_data_mem_pkt_width(d_lce_sets_p, d_lce_assoc_p, cce_block_width_p)
+      `bp_cache_data_mem_pkt_width(lce_sets_p, d_lce_assoc_p, cce_block_width_p)
     , localparam dcache_lce_tag_mem_pkt_width_lp=
-      `bp_cache_tag_mem_pkt_width(d_lce_sets_p, d_lce_assoc_p, tag_width_lp)
+      `bp_cache_tag_mem_pkt_width(lce_sets_p, d_lce_assoc_p, tag_width_lp)
     , localparam dcache_lce_stat_mem_pkt_width_lp=
-      `bp_cache_stat_mem_pkt_width(d_lce_sets_p, d_lce_assoc_p)
+      `bp_cache_stat_mem_pkt_width(lce_sets_p, d_lce_assoc_p)
 
     // width for counter used during initiliazation and for sync messages
-    , localparam cnt_width_lp = `BSG_MAX(cce_id_width_p+1, `BSG_SAFE_CLOG2(d_lce_sets_p)+1)
+    , localparam cnt_width_lp = `BSG_MAX(cce_id_width_p+1, `BSG_SAFE_CLOG2(lce_sets_p)+1)
     , localparam cnt_max_val_lp = ((2**cnt_width_lp)-1)
 
   )
@@ -97,9 +97,9 @@ module bp_be_dcache_lce_cmd
 
   // casting structs
   `declare_bp_lce_cce_if(cce_id_width_p, lce_id_width_p, paddr_width_p, d_lce_assoc_p, dword_width_p, cce_block_width_p)
-  `declare_bp_cache_data_mem_pkt_s(d_lce_sets_p, d_lce_assoc_p, cce_block_width_p);
-  `declare_bp_cache_tag_mem_pkt_s(d_lce_sets_p, d_lce_assoc_p, tag_width_lp);
-  `declare_bp_cache_stat_mem_pkt_s(d_lce_sets_p, d_lce_assoc_p);
+  `declare_bp_cache_data_mem_pkt_s(lce_sets_p, d_lce_assoc_p, cce_block_width_p);
+  `declare_bp_cache_tag_mem_pkt_s(lce_sets_p, d_lce_assoc_p, tag_width_lp);
+  `declare_bp_cache_stat_mem_pkt_s(lce_sets_p, d_lce_assoc_p);
 
   `declare_bp_be_dcache_stat_info_s(d_lce_assoc_p);
 
@@ -248,7 +248,7 @@ module bp_be_dcache_lce_cmd
           stat_mem_pkt_v = 1'b1;
         end
 
-        state_n = ((cnt_r == cnt_width_lp'(d_lce_sets_p-1)) & tag_mem_pkt_v & stat_mem_pkt_v)
+        state_n = ((cnt_r == cnt_width_lp'(lce_sets_p-1)) & tag_mem_pkt_v & stat_mem_pkt_v)
           ? e_lce_cmd_state_uncached_only
           : e_lce_cmd_state_reset;
         cnt_clear = (state_n == e_lce_cmd_state_uncached_only);

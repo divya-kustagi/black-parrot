@@ -112,5 +112,4 @@ typedef enum bit [2:0]
 `define declare_bp_me_if_widths(paddr_width_mp, data_width_mp, lce_id_width_mp, lce_assoc_mp) \
   , localparam cce_mem_msg_width_lp=`bp_cce_mem_msg_width(paddr_width_mp, data_width_mp, lce_id_width_mp, lce_assoc_mp)
 
-
 `endif

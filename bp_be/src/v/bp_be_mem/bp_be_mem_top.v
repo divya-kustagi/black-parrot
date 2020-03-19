@@ -17,7 +17,7 @@ module bp_be_mem_top
  #(parameter bp_params_e bp_params_p = e_bp_inv_cfg
    `declare_bp_proc_params(bp_params_p)
    `declare_bp_lce_cce_if_widths(cce_id_width_p, lce_id_width_p, paddr_width_p, d_lce_assoc_p, dword_width_p, cce_block_width_p)
-   `declare_bp_cache_service_if_widths(paddr_width_p, ptag_width_p, d_lce_sets_p, d_lce_assoc_p, dword_width_p, cce_block_width_p)
+   `declare_bp_cache_service_if_widths(paddr_width_p, ptag_width_p, lce_sets_p, d_lce_assoc_p, dword_width_p, cce_block_width_p)
    
    // Generated parameters
    // D$
@@ -26,7 +26,7 @@ module bp_be_mem_top
    , localparam byte_offset_width_lp   = `BSG_SAFE_CLOG2((cce_block_width_p/d_lce_assoc_p)>>3)
    , localparam word_offset_width_lp   = `BSG_SAFE_CLOG2(block_size_in_words_lp)
    , localparam block_offset_width_lp  = (word_offset_width_lp + byte_offset_width_lp)
-   , localparam index_width_lp         = `BSG_SAFE_CLOG2(d_lce_sets_p)
+   , localparam index_width_lp         = `BSG_SAFE_CLOG2(lce_sets_p)
    , localparam page_offset_width_lp   = (block_offset_width_lp + index_width_lp)
    , localparam way_id_width_lp=`BSG_SAFE_CLOG2(d_lce_assoc_p)
    
@@ -115,7 +115,7 @@ module bp_be_mem_top
 `declare_bp_be_internal_if_structs(vaddr_width_p, paddr_width_p, asid_width_p, branch_metadata_fwd_width_p);
 
 `declare_bp_cfg_bus_s(vaddr_width_p, core_id_width_p, cce_id_width_p, lce_id_width_p, cce_pc_width_p, cce_instr_width_p);
-`declare_bp_be_mmu_structs(vaddr_width_p, ptag_width_p, d_lce_sets_p, cce_block_width_p/8)
+`declare_bp_be_mmu_structs(vaddr_width_p, ptag_width_p, lce_sets_p, cce_block_width_p/8)
 `declare_bp_be_dcache_pkt_s(page_offset_width_lp, dword_width_p);
 
 // Cast input and output ports

@@ -149,4 +149,63 @@ typedef enum logic [1:0] {
   , localparam cache_tag_mem_pkt_width_lp=`bp_cache_tag_mem_pkt_width(sets_mp,ways_mp,tag_width_mp)          \
   , localparam cache_stat_mem_pkt_width_lp=`bp_cache_stat_mem_pkt_width(sets_mp,ways_mp)
 
+//D$
+`define declare_bp_dcache_req_s(data_width_mp, paddr_width_mp) \
+ typedef struct packed                             \
+ {                                                 \
+   logic [data_width_mp-1:0] data;                 \
+   bp_cache_req_size_e size;                       \
+   logic [paddr_width_mp-1:0] addr;                \
+   bp_cache_req_msg_type_e msg_type;               \
+ }  bp_dcache_req_s
+
+`define declare_bp_dcache_req_metadata_s(ways_mp) \
+typedef struct packed                              \
+{                                                  \
+  logic [`BSG_SAFE_CLOG2(ways_mp)-1:0] repl_way;  \
+  logic dirty;                                    \
+}  bp_dcache_req_metadata_s
+
+// data mem pkt structure
+`define declare_bp_dcache_data_mem_pkt_s(sets_mp, ways_mp, data_width_mp)                \
+  typedef struct packed                                                                 \
+  {                                                                                     \
+    logic [`BSG_SAFE_CLOG2(sets_mp)-1:0]      index;                                    \
+    logic [`BSG_SAFE_CLOG2(ways_mp)-1:0]      way_id;                                   \
+    logic [data_width_mp-1:0]                 data;                                     \
+    bp_cache_data_mem_opcode_e                opcode;                                   \
+  }  bp_dcache_data_mem_pkt_s
+
+// tag mem pkt structure
+`define declare_bp_dcache_tag_mem_pkt_s(sets_mp, ways_mp, tag_width_mp)           \
+  typedef struct packed {                                                        \
+    logic [`BSG_SAFE_CLOG2(sets_mp)-1:0]        index;                           \
+    logic [`BSG_SAFE_CLOG2(ways_mp)-1:0]        way_id;                          \
+    logic [`bp_coh_bits-1:0]                    state;                           \
+    logic [tag_width_mp-1:0]                    tag;                             \
+    bp_cache_tag_mem_opcode_e                   opcode;                          \
+  }  bp_dcache_tag_mem_pkt_s
+
+`define declare_bp_dcache_stat_mem_pkt_s(sets_mp, ways_mp)                 \
+  typedef struct packed {                                                 \
+    logic [`BSG_SAFE_CLOG2(sets_mp)-1:0]    index;                        \
+    logic [`BSG_SAFE_CLOG2(ways_mp)-1:0]    way_id;                       \
+    bp_cache_stat_mem_opcode_e              opcode;                       \
+  } bp_dcache_stat_mem_pkt_s
+
+`define declare_bp_dcache_service_if(addr_width_mp, tag_width_mp, sets_mp, ways_mp, req_data_width_mp, block_data_width_mp) \
+  `declare_bp_dcache_req_s(req_data_width_mp, addr_width_mp);               \
+  `declare_bp_dcache_req_metadata_s(ways_mp);                               \
+  `declare_bp_dcache_data_mem_pkt_s(sets_mp, ways_mp, block_data_width_mp); \
+  `declare_bp_dcache_tag_mem_pkt_s(sets_mp, ways_mp, tag_width_mp);         \
+  `declare_bp_dcache_stat_mem_pkt_s(sets_mp, ways_mp)
+
+`define declare_bp_dcache_service_if_widths(addr_width_mp, tag_width_mp, sets_mp, ways_mp, req_data_width_mp, block_data_width_mp) \
+  , localparam dcache_req_width_lp = `bp_cache_req_width(req_data_width_mp, addr_width_mp)                    \
+  , localparam dcache_req_metadata_width_lp = `bp_cache_req_metadata_width(ways_mp)                           \
+  , localparam dcache_data_mem_pkt_width_lp=`bp_cache_data_mem_pkt_width(sets_mp,ways_mp,block_data_width_mp) \
+  , localparam dcache_tag_mem_pkt_width_lp=`bp_cache_tag_mem_pkt_width(sets_mp,ways_mp,tag_width_mp)          \
+  , localparam dcache_stat_mem_pkt_width_lp=`bp_cache_stat_mem_pkt_width(sets_mp,ways_mp)
+
+
 `endif

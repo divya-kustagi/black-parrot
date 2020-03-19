@@ -20,9 +20,12 @@ module bp_core_minimal
     `declare_bp_lce_cce_if_widths(cce_id_width_p, lce_id_width_p, paddr_width_p, lce_assoc_p, dword_width_p, cce_block_width_p)
     `declare_bp_cache_service_if_widths(paddr_width_p, ptag_width_p, lce_sets_p, lce_assoc_p, dword_width_p, cce_block_width_p)
 
+    // D-cache
+    `declare_bp_dcache_service_if_widths(paddr_width_p, ptag_width_p, lce_sets_p, d_lce_assoc_p, dword_width_p, cce_block_width_p)
     , localparam cfg_bus_width_lp = `bp_cfg_bus_width(vaddr_width_p, core_id_width_p, cce_id_width_p, lce_id_width_p, cce_pc_width_p, cce_instr_width_p)
 
     , localparam stat_info_width_lp = `bp_be_dcache_stat_info_width(lce_assoc_p)
+    , localparam d_stat_info_width_lp = `bp_be_dcache_stat_info_width(d_lce_assoc_p)
     )
    (
     input          clk_i
@@ -42,26 +45,31 @@ module bp_core_minimal
     , output logic [1:0][cache_req_width_lp-1:0] cache_req_o
     , output logic [1:0] cache_req_v_o
     , input [1:0] cache_req_ready_i
-    , output logic [1:0][cache_req_metadata_width_lp-1:0] cache_req_metadata_o
+    , output logic [cache_req_metadata_width_lp-1:0] cache_req_metadata_o
+    , output logic [dcache_req_metadata_width_lp-1:0] dcache_req_metadata_o
     , output logic [1:0] cache_req_metadata_v_o
 
     , input [1:0] cache_req_complete_i
 
     // response side - Interface from LCE
-    , input [1:0][cache_data_mem_pkt_width_lp-1:0] data_mem_pkt_i
+    , input [cache_data_mem_pkt_width_lp-1:0] data_mem_pkt_i
+    , input [dcache_data_mem_pkt_width_lp-1:0] d_data_mem_pkt_i
     , input [1:0] data_mem_pkt_v_i
     , output logic [1:0] data_mem_pkt_ready_o
     , output logic [1:0][cce_block_width_p-1:0] data_mem_o 
 
-    , input [1:0][cache_tag_mem_pkt_width_lp-1:0] tag_mem_pkt_i
+    , input [cache_tag_mem_pkt_width_lp-1:0] tag_mem_pkt_i
+    , input [dcache_tag_mem_pkt_width_lp-1:0] d_tag_mem_pkt_i
     , input [1:0] tag_mem_pkt_v_i
     , output logic [1:0] tag_mem_pkt_ready_o
     , output logic [1:0][ptag_width_p-1:0] tag_mem_o
 
-    , input [1:0][cache_stat_mem_pkt_width_lp-1:0] stat_mem_pkt_i
+    , input [cache_stat_mem_pkt_width_lp-1:0] stat_mem_pkt_i
+    , input [dcache_stat_mem_pkt_width_lp-1:0] d_stat_mem_pkt_i
     , input [1:0] stat_mem_pkt_v_i
     , output logic [1:0] stat_mem_pkt_ready_o
-    , output logic [1:0][stat_info_width_lp-1:0] stat_mem_o
+    , output logic [stat_info_width_lp-1:0] stat_mem_o
+    , output logic [d_stat_info_width_lp-1:0] d_stat_mem_o
 
     , input                                        timer_irq_i
     , input                                        software_irq_i
@@ -107,24 +115,24 @@ module bp_core_minimal
      ,.cache_req_o(cache_req_o[0])
      ,.cache_req_v_o(cache_req_v_o[0])
      ,.cache_req_ready_i(cache_req_ready_i[0])
-     ,.cache_req_metadata_o(cache_req_metadata_o[0])
+     ,.cache_req_metadata_o(cache_req_metadata_o)
      ,.cache_req_metadata_v_o(cache_req_metadata_v_o[0])
      ,.cache_req_complete_i(cache_req_complete_i[0])
 
-     ,.data_mem_pkt_i(data_mem_pkt_i[0])
+     ,.data_mem_pkt_i(data_mem_pkt_i)
      ,.data_mem_pkt_v_i(data_mem_pkt_v_i[0])
      ,.data_mem_pkt_ready_o(data_mem_pkt_ready_o[0])
      ,.data_mem_o(data_mem_o[0])
 
-     ,.tag_mem_pkt_i(tag_mem_pkt_i[0])
+     ,.tag_mem_pkt_i(tag_mem_pkt_i)
      ,.tag_mem_pkt_v_i(tag_mem_pkt_v_i[0])
      ,.tag_mem_pkt_ready_o(tag_mem_pkt_ready_o[0])
      ,.tag_mem_o(tag_mem_o[0])
 
      ,.stat_mem_pkt_v_i(stat_mem_pkt_v_i[0])
-     ,.stat_mem_pkt_i(stat_mem_pkt_i[0])
+     ,.stat_mem_pkt_i(stat_mem_pkt_i)
      ,.stat_mem_pkt_ready_o(stat_mem_pkt_ready_o[0])
-     ,.stat_mem_o(stat_mem_o[0])
+     ,.stat_mem_o(stat_mem_o)
      );
 
   bsg_fifo_1r1w_small
@@ -200,25 +208,25 @@ module bp_core_minimal
      ,.cache_req_o(cache_req_o[1])
      ,.cache_req_v_o(cache_req_v_o[1])
      ,.cache_req_ready_i(cache_req_ready_i[1])
-     ,.cache_req_metadata_o(cache_req_metadata_o[1])
+     ,.cache_req_metadata_o(dcache_req_metadata_o)
      ,.cache_req_metadata_v_o(cache_req_metadata_v_o[1])
 
      ,.cache_req_complete_i(cache_req_complete_i[1])
 
-     ,.data_mem_pkt_i(data_mem_pkt_i[1])
+     ,.data_mem_pkt_i(d_data_mem_pkt_i)
      ,.data_mem_pkt_v_i(data_mem_pkt_v_i[1])
      ,.data_mem_pkt_ready_o(data_mem_pkt_ready_o[1])
      ,.data_mem_o(data_mem_o[1])
 
-     ,.tag_mem_pkt_i(tag_mem_pkt_i[1])
+     ,.tag_mem_pkt_i(d_tag_mem_pkt_i)
      ,.tag_mem_pkt_v_i(tag_mem_pkt_v_i[1])
      ,.tag_mem_pkt_ready_o(tag_mem_pkt_ready_o[1])
      ,.tag_mem_o(tag_mem_o[1])
 
      ,.stat_mem_pkt_v_i(stat_mem_pkt_v_i[1])
-     ,.stat_mem_pkt_i(stat_mem_pkt_i[1])
+     ,.stat_mem_pkt_i(d_stat_mem_pkt_i)
      ,.stat_mem_pkt_ready_o(stat_mem_pkt_ready_o[1])
-     ,.stat_mem_o(stat_mem_o[1])
+     ,.stat_mem_o(d_stat_mem_o)
 
      ,.credits_full_i(credits_full_i)
      ,.credits_empty_i(credits_empty_i)

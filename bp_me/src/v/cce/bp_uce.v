@@ -5,12 +5,12 @@ module bp_uce
   import bp_cce_pkg::*;
   import bp_common_cfg_link_pkg::*;
   import bp_me_pkg::*;
-  #(parameter bp_params_e bp_params_p = e_bp_inv_cfg
+  #(parameter bp_params_e bp_params_p = e_bp_inv_cfg, parameter uce_assoc_lp = 4
     `declare_bp_proc_params(bp_params_p)
-    `declare_bp_cache_service_if_widths(paddr_width_p, ptag_width_p, lce_sets_p, lce_assoc_p, dword_width_p, cce_block_width_p)
-    `declare_bp_me_if_widths(paddr_width_p, cce_block_width_p, lce_id_width_p, lce_assoc_p)
+    `declare_bp_cache_service_if_widths(paddr_width_p, ptag_width_p, lce_sets_p, uce_assoc_lp, dword_width_p, cce_block_width_p)
+    `declare_bp_me_if_widths(paddr_width_p, cce_block_width_p, lce_id_width_p, uce_assoc_lp)
 
-    , localparam stat_info_width_lp = `bp_be_dcache_stat_info_width(lce_assoc_p)
+    , localparam stat_info_width_lp = `bp_be_dcache_stat_info_width(uce_assoc_lp)
     )
    (input                                            clk_i
     , input                                          reset_i
@@ -51,8 +51,8 @@ module bp_uce
     , output logic                                   mem_resp_yumi_o
     );
 
-  `declare_bp_me_if(paddr_width_p, cce_block_width_p, lce_id_width_p, lce_assoc_p);
-  `declare_bp_cache_service_if(paddr_width_p, ptag_width_p, lce_sets_p, lce_assoc_p, dword_width_p, cce_block_width_p);
+  `declare_bp_me_if(paddr_width_p, cce_block_width_p, lce_id_width_p, uce_assoc_lp);
+  `declare_bp_cache_service_if(paddr_width_p, ptag_width_p, lce_sets_p, uce_assoc_lp, dword_width_p, cce_block_width_p);
 
   `bp_cast_i(bp_cache_req_s, cache_req);
   `bp_cast_o(bp_cache_tag_mem_pkt_s, tag_mem_pkt);
@@ -146,9 +146,9 @@ module bp_uce
   wire uc_load_v_li    = cache_req_v_r & cache_req_r.msg_type inside {e_uc_load};
   wire wt_store_v_li   = cache_req_v_r & cache_req_r.msg_type inside {e_wt_store};
 
-  localparam byte_offset_width_lp  = `BSG_SAFE_CLOG2(dword_width_p>>3);
+  localparam byte_offset_width_lp  = `BSG_SAFE_CLOG2((cce_block_width_p/uce_assoc_lp)>>3);
   // Words per line == associativity
-  localparam word_offset_width_lp  = `BSG_SAFE_CLOG2(lce_assoc_p);
+  localparam word_offset_width_lp  = `BSG_SAFE_CLOG2(uce_assoc_lp);
   localparam block_offset_width_lp = (word_offset_width_lp + byte_offset_width_lp);
   localparam index_width_lp        = `BSG_SAFE_CLOG2(lce_sets_p);
   logic [index_width_lp-1:0] index_val, index_cnt;
