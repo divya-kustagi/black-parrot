@@ -43,6 +43,7 @@ module bp_softcore
   //D$
   `declare_bp_dcache_service_if(paddr_width_p, ptag_width_p, lce_sets_p, d_lce_assoc_p, dword_width_p, cce_block_width_p);
   `declare_bp_be_dcache_stat_info_s(d_lce_assoc_p);
+  `declare_bp_dcache_me_if(paddr_width_p, cce_block_width_p, lce_id_width_p, d_lce_assoc_p);
 
   `bp_cast_o(bp_cce_mem_msg_s, mem_cmd);
   `bp_cast_o(bp_cce_mem_msg_s, io_cmd);
@@ -74,6 +75,10 @@ module bp_softcore
   logic timer_irq_li, software_irq_li, external_irq_li;
 
   bp_cce_mem_msg_s [1:0] mem_cmd_lo;
+
+  // Temp struct to covert 569/8/7 bit expression to 570 bit  
+  bp_dcache_cce_mem_msg_s d_mem_cmd_lo;
+
   logic [1:0] mem_cmd_v_lo, mem_cmd_ready_li;
   bp_cce_mem_msg_s [1:0] mem_resp_li;
   logic [1:0] mem_resp_v_li, mem_resp_yumi_lo;
@@ -183,6 +188,37 @@ module bp_softcore
       ,.mem_resp_yumi_o(mem_resp_yumi_lo[0])
       );
 
+
+  assign mem_cmd_lo[1].data = d_mem_cmd_lo.data;
+
+  //payload to outside world
+  parameter pad_bits_lp = `BSG_SAFE_CLOG2(8) - `BSG_SAFE_CLOG2(d_lce_assoc_p); // replace 8 with max assoc
+  logic [pad_bits_lp-1:0] pad_zero;
+  assign pad_zero = '0;
+  assign mem_cmd_lo[1].payload.lce_id = d_mem_cmd_lo.payload.lce_id;
+  assign mem_cmd_lo[1].payload.way_id = {pad_zero , d_mem_cmd_lo.payload.way_id};
+  assign mem_cmd_lo[1].payload.state = d_mem_cmd_lo.payload.state;
+  assign mem_cmd_lo[1].payload.speculative = d_mem_cmd_lo.payload.speculative;
+
+  assign mem_cmd_lo[1].size = d_mem_cmd_lo.size;
+  assign mem_cmd_lo[1].addr = d_mem_cmd_lo.addr;
+  assign mem_cmd_lo[1].msg_type = d_mem_cmd_lo.msg_type;
+
+  bp_dcache_cce_mem_msg_s mem_resp_li_chop;
+  assign mem_resp_li_chop.data = mem_resp_li[1].data;
+
+  //payload to dcache
+  parameter chop_bits_lp = `BSG_SAFE_CLOG2(8) - `BSG_SAFE_CLOG2(d_lce_assoc_p); // replace 8 with max assoc
+  parameter msb_pos_lp = `BSG_SAFE_CLOG2(8);
+  assign mem_resp_li_chop.payload.lce_id = mem_resp_li[1].payload.lce_id;
+  assign mem_resp_li_chop.payload.way_id = mem_resp_li[1].payload.way_id[msb_pos_lp-1:chop_bits_lp];
+  assign mem_resp_li_chop.payload.state = mem_resp_li[1].payload.state;
+  assign mem_resp_li_chop.payload.speculative = mem_resp_li[1].payload.speculative;
+
+  assign mem_resp_li_chop.size = mem_resp_li[1].size;
+  assign mem_resp_li_chop.addr = mem_resp_li[1].addr;
+  assign mem_resp_li_chop.msg_type = mem_resp_li[1].msg_type;
+
   bp_uce
     #(.bp_params_p(bp_params_p), .uce_assoc_lp(d_lce_assoc_p))
     be_uce
@@ -217,11 +253,11 @@ module bp_softcore
       ,.credits_full_o(credits_full_li[1])
       ,.credits_empty_o(credits_empty_li[1])
 
-      ,.mem_cmd_o(mem_cmd_lo[1][568:0])
+      ,.mem_cmd_o(d_mem_cmd_lo)
       ,.mem_cmd_v_o(mem_cmd_v_lo[1])
       ,.mem_cmd_ready_i(mem_cmd_ready_li[1])
 
-      ,.mem_resp_i(mem_resp_li[1][568:0])
+      ,.mem_resp_i(mem_resp_li_chop)
       ,.mem_resp_v_i(mem_resp_v_li[1])
       ,.mem_resp_yumi_o(mem_resp_yumi_lo[1])
       );
