@@ -88,7 +88,7 @@ package bp_common_aviary_pkg;
       ,cce_block_width      : 512
       ,cce_pc_width         : 8
 
-      ,d_lce_assoc          : 4
+      ,d_lce_assoc          : 4 
 
       ,l2_sets : 256
       ,l2_assoc: 4
